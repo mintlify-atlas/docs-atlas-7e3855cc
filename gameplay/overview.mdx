@@ -1,0 +1,118 @@
+---
+title: 'Game Mechanics Overview'
+description: 'Core gameplay mechanics of the Memorama WebVR experience'
+---
+
+## Introduction
+
+Memorama WebVR is a high-stakes memory card game set in a haunting casino environment. Players must find all 4 matching pairs before time runs out or lose their "soul" to the forsaken casino.
+
+<Warning>
+  You have only **40 seconds** to complete the game. The timer starts automatically when you interact with your first card.
+</Warning>
+
+## Game Flow
+
+<Steps>
+  <Step title="Game Initialization">
+    When the game loads, 8 cards (4 pairs) are shuffled and placed on the casino table. All cards start face-down showing the back texture.
+    
+    ```javascript
+    // Card initialization from index.html:86-88
+    function initGame() {
+        board.innerHTML = '';
+        const shuffled = [...cardData].sort(() => Math.random() - 0.5);
+    ```
+  </Step>
+
+  <Step title="First Interaction">
+    The 40-second countdown begins the moment you hover over your first card. Background music starts playing automatically.
+    
+    ```javascript
+    // Timer activation from index.html:67-77
+    function startTimer() {
+        if(!gameActive) {
+            gameActive = true;
+            document.querySelector('#bgMusic').components.sound.playSound();
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerText.setAttribute('value', `VIDA: ${timeLeft}s`);
+                if(timeLeft <= 0) die();
+            }, 1000);
+        }
+    }
+    ```
+  </Step>
+
+  <Step title="Card Matching">
+    Flip two cards at a time to find matching pairs. Matching pairs disappear from the board. Non-matching cards flip back face-down.
+  </Step>
+
+  <Step title="Win or Lose">
+    Find all 4 pairs before time expires to escape with your life. If the timer reaches zero, you lose your soul to the casino.
+  </Step>
+</Steps>
+
+## Core Game State
+
+The game maintains several critical state variables:
+
+```javascript
+// Game state variables from index.html:60-65
+let timeLeft = 40;
+let timerInterval;
+let gameActive = false;
+let pairsFound = 0;
+let lockBoard = false; // Master lock to prevent card interaction issues
+const cardData = ['img1', 'img1', 'img2', 'img2', 'img3', 'img3', 'img4', 'img4'];
+```
+
+<AccordionGroup>
+  <Accordion title="timeLeft">
+    Tracks remaining seconds (starts at 40). Decrements every second once the game begins.
+  </Accordion>
+  
+  <Accordion title="gameActive">
+    Boolean flag that prevents the timer from starting multiple times. Set to `true` on first card interaction.
+  </Accordion>
+  
+  <Accordion title="pairsFound">
+    Counter that increments each time a matching pair is discovered. Game is won when this reaches 4.
+  </Accordion>
+  
+  <Accordion title="lockBoard">
+    Critical mechanism that prevents players from flipping more than 2 cards at once. See [Controls](/gameplay/controls#board-lock-mechanism) for details.
+  </Accordion>
+</AccordionGroup>
+
+## Card Layout
+
+Cards are arranged in a 4x2 grid on the casino table:
+
+```javascript
+// Card positioning logic from index.html:90-91
+const x = (index % 4) * 0.4; 
+const y = Math.floor(index / 4) * -0.6;
+```
+
+- **4 columns**: Cards 0-3 in top row, cards 4-7 in bottom row
+- **Spacing**: 0.4 units horizontal, 0.6 units vertical
+- **Dimensions**: Each card is 0.35 wide × 0.5 tall × 0.01 deep
+
+<Info>
+  The board itself is positioned at `(-0.3, 0.85, 0.2)` with a -90° rotation and 0.5 scale, simulating a table surface in the 3D space.
+</Info>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Controls" icon="hand-pointer" href="/gameplay/controls">
+    Learn how to interact with cards using VR cursor or mouse
+  </Card>
+  <Card title="Timer System" icon="clock" href="/gameplay/timer-system">
+    Understand the 40-second countdown mechanism
+  </Card>
+  <Card title="Objectives" icon="trophy" href="/gameplay/objectives">
+    Win and lose conditions explained
+  </Card>
+</CardGroup>

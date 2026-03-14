@@ -1,0 +1,344 @@
+---
+title: 'Scene Structure'
+description: 'A-Frame entity hierarchy and component configuration'
+---
+
+## Scene Hierarchy
+
+The complete A-Frame scene is defined at `index.html:8-52`. Here's the entity structure:
+
+```
+a-scene (fog-enabled)
+├── a-assets (preload)
+│   ├── Images (card faces, textures)
+│   └── Audio (sound effects, music)
+├── a-entity#bgMusic (background audio)
+├── a-entity#rig (camera container)
+│   └── a-entity#camera (VR camera)
+│       ├── a-cursor (ray selector)
+│       ├── a-text#timerText (HUD timer)
+│       └── a-plane#deathOverlay (red fade)
+├── a-light (ambient)
+├── a-light#flicker (animated red point)
+├── a-sky (black void)
+├── a-plane (floor carpet)
+├── a-box (back wall)
+├── a-box (debris 1)
+├── a-cylinder (debris 2)
+├── a-entity (table structure)
+│   ├── a-cylinder (table leg)
+│   ├── a-cylinder (table top - brown)
+│   └── a-cylinder (table felt - green)
+├── a-entity#board (card container)
+└── a-text#statusText (win/lose message)
+```
+
+## Scene Configuration
+
+### Root Scene
+
+Defined at `index.html:8`:
+
+```html
+<a-scene fog="type: exponential; color: #0a0000; density: 0.15">
+```
+
+| Attribute | Value | Purpose |
+|-----------|-------|----------|
+| `fog.type` | exponential | Creates distance-based fade |
+| `fog.color` | #0a0000 | Dark red fog (horror atmosphere) |
+| `fog.density` | 0.15 | Visibility range |
+
+<Note>
+  Exponential fog creates the oppressive "Forsaken Casino" atmosphere by obscuring distant objects in blood-red haze.
+</Note>
+
+## Asset Management
+
+All assets are preloaded in `<a-assets>` at `index.html:9-19`:
+
+```html
+<a-assets>
+  <img id="img1" src="img/img1.jpg">
+  <img id="img2" src="img/img2.jpg">
+  <img id="img3" src="img/img3.jpg">
+  <img id="img4" src="img/img4.jpg">
+  <img id="back" src="img/atras.jpeg">
+  <img id="carpet" src="piso.jpg">
+  <img id="stone" src="lados.jpg">
+  <audio id="click-sound" src="cartas.mp3"></audio>
+  <audio id="background-music" src="fondo.mp3" preload="auto"></audio>
+</a-assets>
+```
+
+<Steps>
+  <Step title="Images are cached">
+    A-Frame loads and caches all images before rendering the scene
+  </Step>
+  <Step title="Audio is preloaded">
+    The `preload="auto"` ensures background music is ready to play immediately
+  </Step>
+  <Step title="Assets referenced by ID">
+    Use `#img1` syntax to reference assets in entity `src` attributes
+  </Step>
+</Steps>
+
+## Camera & Controls
+
+The camera rig is defined at `index.html:23-30`:
+
+```html
+<a-entity id="rig" position="0 1.6 1.2">
+  <a-entity id="camera" camera look-controls wasd-controls="acceleration: 10" 
+            rotation="-25 0 0">
+    <a-cursor id="cursor" raycaster="objects: .clickable" 
+              material="color: #ff0000" scale="0.5 0.5 0.5"></a-cursor>
+    
+    <a-text id="timerText" value="VIDA: 40s" color="red" 
+            position="0 0.5 -1" scale="0.4 0.4 0.4" align="center"></a-text>
+    <a-plane id="deathOverlay" position="0 0 -0.05" width="2" height="2" 
+             color="#300" material="opacity: 0; transparent: true"></a-plane>
+  </a-entity>
+</a-entity>
+```
+
+### Rig Position
+
+- **Height**: `1.6` meters (average eye level)
+- **Forward**: `1.2` meters from origin (viewing distance from table)
+
+### Camera Components
+
+<AccordionGroup>
+  <Accordion title="look-controls">
+    Enables mouse drag or VR headset rotation to look around the scene
+  </Accordion>
+  
+  <Accordion title="wasd-controls">
+    Keyboard movement (W/A/S/D keys) with custom acceleration of 10 for responsive movement
+  </Accordion>
+  
+  <Accordion title="rotation='-25 0 0'">
+    Camera tilts down 25° to naturally view the card table below
+  </Accordion>
+</AccordionGroup>
+
+### Cursor (Raycaster)
+
+Defined at `index.html:25`:
+
+```html
+<a-cursor raycaster="objects: .clickable" material="color: #ff0000" scale="0.5 0.5 0.5">
+```
+
+- **Raycaster**: Only detects entities with class `clickable` (cards)
+- **Color**: Red (#ff0000) matches the horror theme
+- **Scale**: 0.5x smaller than default for precision
+
+<Warning>
+  Cards must have `class="clickable"` or the cursor won't trigger `mouseenter` events
+</Warning>
+
+## HUD Elements
+
+### Timer Text
+
+Defined at `index.html:27`:
+
+```html
+<a-text id="timerText" value="VIDA: 40s" color="red" 
+        position="0 0.5 -1" scale="0.4 0.4 0.4" align="center">
+```
+
+Attached to camera so it follows player's view:
+- **Position**: Above center of view (0.5 units up, 1 meter forward)
+- **Color**: Red for urgency
+- **Updated**: Every second by JavaScript at `index.html:73`
+
+### Death Overlay
+
+Defined at `index.html:28`:
+
+```html
+<a-plane id="deathOverlay" position="0 0 -0.05" width="2" height="2" 
+         color="#300" material="opacity: 0; transparent: true">
+```
+
+- **Initial state**: Fully transparent (opacity: 0)
+- **On death**: Fades to opaque red at `index.html:82`
+- **Close to camera**: -0.05 units (right in front of lens)
+
+## Lighting System
+
+Two lights create the eerie casino atmosphere:
+
+### Ambient Light
+
+Defined at `index.html:32`:
+
+```html
+<a-light type="ambient" color="#444"></a-light>
+```
+
+Provides dim base illumination (#444 = dark gray).
+
+### Flickering Point Light
+
+Defined at `index.html:33-34`:
+
+```html
+<a-light id="flicker" type="point" intensity="1" position="0 3 0" color="#f00"
+         animation="property: intensity; from: 0.2; to: 1.2; dur: 150; 
+                    loop: true; dir: alternate">
+```
+
+| Property | Value | Effect |
+|----------|-------|--------|
+| `type` | point | Radiates light from a single point |
+| `color` | #f00 | Pure red |
+| `position` | 0 3 0 | 3 meters above table |
+| `animation` | intensity 0.2-1.2 | Flickers every 150ms |
+
+<Note>
+  The flickering red light creates a dynamic, unsettling atmosphere reminiscent of emergency lighting.
+</Note>
+
+## Environment Objects
+
+### Sky
+
+Defined at `index.html:36`:
+
+```html
+<a-sky color="#000"></a-sky>
+```
+
+Pure black background (void aesthetic).
+
+### Floor
+
+Defined at `index.html:37`:
+
+```html
+<a-plane src="#carpet" rotation="-90 0 0" width="30" height="30" color="#222">
+```
+
+- **Texture**: Carpet image from assets
+- **Size**: 30x30 meters
+- **Tint**: Darkened with #222 (dark gray)
+- **Rotation**: -90° to lay flat
+
+### Back Wall
+
+Defined at `index.html:38`:
+
+```html
+<a-box src="#stone" position="0 4 -6" width="20" height="10" depth="0.5" color="#333">
+```
+
+Stone-textured wall behind the player view.
+
+### Debris Objects
+
+Adds environmental storytelling at `index.html:40-41`:
+
+```html
+<a-box color="#111" position="-2 0.3 -2" rotation="0 30 0" 
+       width="0.6" height="0.6" depth="0.6"></a-box>
+<a-cylinder color="#050505" position="2 0.5 -2.5" 
+            radius="0.3" height="1" rotation="0 0 15"></a-cylinder>
+```
+
+Small dark objects scattered around for atmosphere.
+
+## Game Table
+
+Defined at `index.html:43-47`:
+
+```html
+<a-entity position="0 0 0">
+  <a-cylinder color="#111" position="0 0.4 0" radius="0.05" height="0.8"></a-cylinder>
+  <a-cylinder color="#1a0f00" position="0 0.8 0" radius="1" height="0.08"></a-cylinder> 
+  <a-cylinder color="#002200" position="0 0.81 0" radius="0.95" height="0.04"></a-cylinder>
+</a-entity>
+```
+
+<Steps>
+  <Step title="Table Leg">
+    Black cylinder (0.05 radius, 0.8 height) - thin support
+  </Step>
+  <Step title="Table Top">
+    Brown cylinder (1 meter radius, 0.08 height) - wood surface
+  </Step>
+  <Step title="Green Felt">
+    Dark green cylinder (0.95 radius, 0.04 height) - casino table felt
+  </Step>
+</Steps>
+
+## Card Board Container
+
+Defined at `index.html:49`:
+
+```html
+<a-entity id="board" position="-0.3 0.85 0.2" rotation="-90 0 0" scale="0.5 0.5 0.5">
+</a-entity>
+```
+
+- **Position**: Slightly offset on table surface (0.85 units high)
+- **Rotation**: -90° to lay cards flat on table
+- **Scale**: 0.5x to fit 4x2 card grid
+- **Populated**: Dynamically by `initGame()` at `index.html:86-113`
+
+<Note>
+  The board starts empty and is filled with 8 card entities when `initGame()` runs.
+</Note>
+
+## Status Text
+
+Defined at `index.html:51`:
+
+```html
+<a-text id="statusText" value="" color="red" position="0 2 -3" 
+        scale="2 2 2" align="center">
+```
+
+- **Initial value**: Empty string
+- **Win message**: "SALISTE CON VIDA" (set at `index.html:160`)
+- **Lose message**: "PERDISTE TU ALMA" (set at `index.html:81`)
+- **Scale**: 2x for dramatic visibility
+
+## Dynamic Card Structure
+
+Cards are created programmatically at `index.html:92-101`:
+
+```javascript
+const card = document.createElement('a-box');
+card.setAttribute('position', `${x} ${y} 0`);
+card.setAttribute('width', '0.35'); 
+card.setAttribute('height', '0.5'); 
+card.setAttribute('depth', '0.01');
+card.setAttribute('src', '#back');
+card.setAttribute('class', 'clickable');
+card.dataset.id = imgId;
+card.dataset.flipped = "false";
+```
+
+### Card Grid Layout
+
+From `index.html:90-91`:
+
+```javascript
+const x = (index % 4) * 0.4; 
+const y = Math.floor(index / 4) * -0.6;
+```
+
+Creates a 4x2 grid:
+
+```
+[0,0]  [0.4,0]  [0.8,0]  [1.2,0]
+[0,-0.6]  [0.4,-0.6]  [0.8,-0.6]  [1.2,-0.6]
+```
+
+<Tip>
+  Spacing of 0.4 horizontal and 0.6 vertical creates comfortable card separation for VR viewing.
+</Tip>

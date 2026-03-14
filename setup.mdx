@@ -1,0 +1,317 @@
+---
+title: Setup Guide
+description: Detailed setup instructions for browser requirements, VR headsets, and local development
+---
+
+This guide covers everything you need to set up Memorama WebVR for both desktop and VR headset play.
+
+## Browser Requirements
+
+Memorama is built with [A-Frame 1.4.0](https://aframe.io), a web framework for building VR experiences.
+
+### Desktop Browsers
+
+For desktop play (mouse/keyboard controls):
+
+| Browser | Version | Support Level |
+|---------|---------|---------------|
+| Chrome | 90+ | ✅ Recommended |
+| Firefox | 88+ | ✅ Fully supported |
+| Edge | 90+ | ✅ Fully supported |
+| Safari | 14+ | ⚠️ Limited (no WebXR) |
+
+<Note>
+  The game uses **A-Frame 1.4.0** loaded from CDN:
+  ```html
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  ```
+</Note>
+
+### VR Headset Support
+
+For immersive VR experiences, you need a WebXR-compatible browser:
+
+- **Meta Quest 2/3/Pro**: Built-in browser (recommended)
+- **Oculus Browser**: Pre-installed on Meta devices
+- **Firefox Reality**: Available on most VR platforms
+- **Chrome (with WebXR Device API)**: For PC VR headsets
+
+<Warning>
+  WebVR is deprecated. This game uses A-Frame which automatically handles WebXR compatibility. Make sure your browser supports WebXR, not the older WebVR API.
+</Warning>
+
+## VR Headset Setup
+
+<Steps>
+  <Step title="Prepare your VR headset">
+    - Fully charge your headset
+    - Ensure you have at least 2m × 2m of clear space
+    - Connect to the same WiFi network as your development computer (if testing locally)
+  </Step>
+
+  <Step title="Configure your development server">
+    For VR headsets to access your local game, you need to:
+    
+    **1. Find your local IP address:**
+    
+    <CodeGroup>
+    ```bash macOS/Linux
+    ifconfig | grep "inet "
+    # Look for something like 192.168.1.x
+    ```
+    
+    ```bash Windows
+    ipconfig
+    # Look for IPv4 Address under your active network
+    ```
+    </CodeGroup>
+    
+    **2. Start a local server:**
+    
+    <CodeGroup>
+    ```bash Python
+    python -m http.server 8000
+    # Server runs at http://0.0.0.0:8000
+    ```
+    
+    ```bash Node.js
+    npx http-server -p 8000
+    # Server runs at http://0.0.0.0:8000
+    ```
+    
+    ```bash PHP
+    php -S 0.0.0.0:8000
+    # Server runs at http://0.0.0.0:8000
+    ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Access from your VR headset">
+    1. Put on your VR headset
+    2. Open the browser
+    3. Navigate to `http://YOUR_IP_ADDRESS:8000` (e.g., `http://192.168.1.100:8000`)
+    4. Enter VR mode by clicking the VR goggles icon (bottom right)
+    
+    <Note>
+      A-Frame automatically adds VR mode controls. Look for the VR icon in the bottom-right corner of the browser window.
+    </Note>
+  </Step>
+
+  <Step title="Test the controls">
+    In VR mode:
+    - **Look around**: Move your head naturally
+    - **Move**: Use the joystick/thumbstick (WASD controls are mapped automatically)
+    - **Select cards**: Look directly at a card to flip it
+    - **Cursor**: The red cursor (`#cursor`) shows where you're looking
+    
+    The game uses gaze-based interaction:
+    ```html
+    <a-cursor id="cursor" raycaster="objects: .clickable" 
+              material="color: #ff0000" scale="0.5 0.5 0.5">
+    </a-cursor>
+    ```
+  </Step>
+</Steps>
+
+## Local Development Environment
+
+### Prerequisites
+
+- A code editor (VS Code, Sublime Text, etc.)
+- A local web server (required for asset loading)
+- Basic knowledge of HTML and JavaScript
+
+### Project Structure
+
+The game is entirely self-contained in `index.html`:
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Forsaken Casino - Fixed Logic</title>
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  </head>
+  <body>
+    <a-scene fog="type: exponential; color: #0a0000; density: 0.15">
+      <!-- Assets -->
+      <a-assets>
+        <img id="img1" src="img/img1.jpg">
+        <!-- ... more assets -->
+      </a-assets>
+      
+      <!-- VR Scene -->
+      <!-- ... game elements -->
+    </a-scene>
+    
+    <!-- Game Logic -->
+    <script>
+      // Game code here
+    </script>
+  </body>
+</html>
+```
+
+### Asset Requirements
+
+The game requires these assets to be in place:
+
+**Images:**
+- `img/img1.jpg` - Card image 1
+- `img/img2.jpg` - Card image 2
+- `img/img3.jpg` - Card image 3
+- `img/img4.jpg` - Card image 4
+- `img/atras.jpeg` - Card back image
+- `piso.jpg` - Floor texture
+- `lados.jpg` - Wall texture
+
+**Audio:**
+- `cartas.mp3` - Card flip sound effect
+- `fondo.mp3` - Background music
+
+<Warning>
+  All assets are loaded through A-Frame's asset management system:
+  ```html
+  <a-assets>
+    <img id="img1" src="img/img1.jpg">
+    <audio id="click-sound" src="cartas.mp3"></audio>
+  </a-assets>
+  ```
+  
+  Missing assets will cause console errors and broken visuals.
+</Warning>
+
+### Development Workflow
+
+<Steps>
+  <Step title="Set up live reload (optional)">
+    For faster development, use a live-reload server:
+    
+    ```bash
+    # Using Live Server (VS Code extension)
+    # Right-click index.html → "Open with Live Server"
+    
+    # Or using browser-sync
+    npx browser-sync start --server --files "*.html, *.js, *.css"
+    ```
+  </Step>
+
+  <Step title="Enable developer tools">
+    - Open DevTools (F12 or Cmd+Option+I)
+    - Use the **Console** to debug game logic
+    - Check the **Network** tab for asset loading issues
+    - Use **A-Frame Inspector** (Ctrl+Alt+I) to inspect the 3D scene
+    
+    <Note>
+      The A-Frame Inspector is a powerful visual debugging tool built into A-Frame. Press **Ctrl+Alt+I** (or Cmd+Option+I on Mac) to open it.
+    </Note>
+  </Step>
+
+  <Step title="Test game mechanics">
+    Key variables you can inspect in the console:
+    
+    ```javascript
+    // Check timer
+    console.log(timeLeft); // Current seconds remaining
+    
+    // Check game state
+    console.log(gameActive); // Is timer running?
+    console.log(pairsFound); // How many pairs matched
+    console.log(lockBoard); // Is board locked?
+    
+    // Access game elements
+    const board = document.querySelector('#board');
+    const timer = document.querySelector('#timerText');
+    ```
+  </Step>
+
+  <Step title="Modify and test">
+    Common customizations:
+    
+    **Change timer duration:**
+    ```javascript
+    let timeLeft = 40; // Change to 60 for easier gameplay
+    ```
+    
+    **Adjust camera position:**
+    ```html
+    <a-entity id="rig" position="0 1.6 1.2">
+      <!-- Change Y value to adjust height -->
+      <!-- Change Z value to move closer/farther -->
+    </a-entity>
+    ```
+    
+    **Modify fog intensity:**
+    ```html
+    <a-scene fog="type: exponential; color: #0a0000; density: 0.15">
+      <!-- Increase density for thicker fog -->
+    </a-scene>
+    ```
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+### Common Issues
+
+<AccordionGroup>
+  <Accordion title="Cards don't flip when clicked">
+    - Check that the cursor is properly configured:
+      ```html
+      <a-cursor raycaster="objects: .clickable"></a-cursor>
+      ```
+    - Verify cards have the `clickable` class:
+      ```javascript
+      card.setAttribute('class', 'clickable');
+      ```
+    - Check console for JavaScript errors
+  </Accordion>
+
+  <Accordion title="Assets (images/sounds) not loading">
+    - Use a local web server instead of opening `file://` directly
+    - Check file paths are correct (case-sensitive on Linux/Mac)
+    - Look for 404 errors in the Network tab
+    - Verify all files exist in the correct directories
+  </Accordion>
+
+  <Accordion title="VR mode doesn't work">
+    - Ensure you're using a WebXR-compatible browser
+    - Check that you're accessing via HTTP/HTTPS (not `file://`)
+    - Look for WebXR API errors in console
+    - Try a different browser (Meta Quest Browser recommended)
+  </Accordion>
+
+  <Accordion title="Music doesn't play">
+    - Audio requires user interaction to start (autoplay policy)
+    - The game starts music on first card flip:
+      ```javascript
+      document.querySelector('#bgMusic').components.sound.playSound();
+      ```
+    - Check browser console for audio errors
+    - Verify `fondo.mp3` exists and is a valid audio file
+  </Accordion>
+
+  <Accordion title="Performance issues in VR">
+    - Reduce fog density in `<a-scene fog="...">`
+    - Lower image resolutions
+    - Disable ambient animations
+    - Check headset battery level
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Game Mechanics" icon="gamepad" href="/gameplay/overview">
+    Understand how the card matching logic works
+  </Card>
+  <Card title="Customization" icon="palette" href="/development/customization">
+    Learn how to customize visuals and gameplay
+  </Card>
+  <Card title="A-Frame Documentation" icon="book" href="https://aframe.io/docs/">
+    Official A-Frame documentation
+  </Card>
+  <Card title="WebXR Device API" icon="vr-cardboard" href="https://developer.mozilla.org/en-US/docs/Web/API/WebXR_Device_API">
+    Learn about WebXR standards
+  </Card>
+</CardGroup>

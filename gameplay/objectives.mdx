@@ -1,0 +1,225 @@
+---
+title: 'Win & Lose Conditions'
+description: 'How to win the game and what happens when you lose'
+---
+
+## Victory Condition
+
+To escape the forsaken casino with your soul intact, you must **find all 4 matching pairs before the 40-second timer expires**.
+
+### Win Logic
+
+The game tracks found pairs using the `pairsFound` counter:
+
+```javascript
+// Win detection from index.html:135-138
+pairsFound++;
+flippedCards = [];
+lockBoard = false; // RELEASE
+if (pairsFound === 4) win();
+```
+
+When the 4th pair is matched, the `win()` function executes:
+
+```javascript
+// Win function from index.html:158-162
+function win() {
+    clearInterval(timerInterval);
+    statusText.setAttribute('value', 'SALISTE CON VIDA');
+    setTimeout(() => location.reload(), 4000);
+}
+```
+
+<Steps>
+  <Step title="Timer Stops">
+    `clearInterval(timerInterval)` halts the countdown, preserving your remaining time.
+  </Step>
+
+  <Step title="Victory Message">
+    The status text displays **"SALISTE CON VIDA"** ("YOU ESCAPED WITH YOUR LIFE") in red letters at position `(0, 2, -3)` with 2x scale.
+  </Step>
+
+  <Step title="Game Reload">
+    After 4 seconds, the page reloads automatically to start a fresh game.
+  </Step>
+</Steps>
+
+<Info>
+  The 4-second delay gives you time to celebrate your victory before the game resets.
+</Info>
+
+## Defeat Condition
+
+You lose if the timer reaches zero before finding all 4 pairs.
+
+### Death Logic
+
+Every second, the timer checks if time has expired:
+
+```javascript
+// Timer countdown from index.html:71-75
+timerInterval = setInterval(() => {
+    timeLeft--;
+    timerText.setAttribute('value', `VIDA: ${timeLeft}s`);
+    if(timeLeft <= 0) die();
+}, 1000);
+```
+
+When `timeLeft` reaches 0, the `die()` function executes:
+
+```javascript
+// Death function from index.html:79-84
+function die() {
+    clearInterval(timerInterval);
+    statusText.setAttribute('value', 'PERDISTE TU ALMA');
+    deathOverlay.setAttribute('animation', 'property: material.opacity; to: 1; dur: 1000');
+    setTimeout(() => location.reload(), 3000);
+}
+```
+
+<Steps>
+  <Step title="Timer Stops">
+    `clearInterval(timerInterval)` prevents the countdown from going negative.
+  </Step>
+
+  <Step title="Defeat Message">
+    The status text displays **"PERDISTE TU ALMA"** ("YOU LOST YOUR SOUL") in red.
+  </Step>
+
+  <Step title="Death Overlay">
+    A dark red overlay (`#300`) fades in over 1 second, covering your entire view:
+    
+    ```html
+    <!-- Overlay element from index.html:28 -->
+    <a-plane id="deathOverlay" 
+      position="0 0 -0.05" 
+      width="2" 
+      height="2" 
+      color="#300" 
+      material="opacity: 0; transparent: true">
+    </a-plane>
+    ```
+    
+    The opacity animates from 0 to 1, creating a "soul being consumed" effect.
+  </Step>
+
+  <Step title="Game Reload">
+    After 3 seconds, the page reloads to give you another chance.
+  </Step>
+</Steps>
+
+<Warning>
+  Unlike the victory condition (4-second delay), defeat reloads after only 3 seconds, emphasizing the urgency of failure.
+</Warning>
+
+## Score Tracking
+
+The game does **not** persist scores across sessions. Each reload starts fresh with:
+
+```javascript
+// Initial state from index.html:60-63
+let timeLeft = 40;
+let gameActive = false;
+let pairsFound = 0;
+```
+
+<Note>
+  To implement score persistence, you would need to use `localStorage` or a backend database to track:
+  - Best completion time
+  - Total wins/losses
+  - Win streak
+</Note>
+
+## Interaction Lockout on Death
+
+Once the timer expires, card interactions are disabled:
+
+```javascript
+// From index.html:105
+if (lockBoard || this.dataset.flipped === "true" || timeLeft <= 0) return;
+```
+
+The `timeLeft <= 0` check prevents players from continuing to flip cards after losing.
+
+## Pair Matching Mechanics
+
+Pairs are identified by matching `dataset.id` values:
+
+```javascript
+// Matching logic from index.html:130-139
+if (card1.dataset.id === card2.dataset.id) {
+    // IS A PAIR
+    setTimeout(() => {
+        card1.setAttribute('animation', 'property: scale; to: 0 0 0; dur: 300');
+        card2.setAttribute('animation', 'property: scale; to: 0 0 0; dur: 300');
+        pairsFound++;
+        flippedCards = [];
+        lockBoard = false;
+        if (pairsFound === 4) win();
+    }, 600);
+}
+```
+
+<AccordionGroup>
+  <Accordion title="Match Animation">
+    Matching cards shrink to scale `(0, 0, 0)` over 300ms, creating a "disappearing" effect.
+  </Accordion>
+  
+  <Accordion title="Timing">
+    The 600ms delay before processing gives players time to see both cards before they vanish.
+  </Accordion>
+  
+  <Accordion title="Progress Update">
+    `pairsFound` increments immediately after the animation starts, not after it completes.
+  </Accordion>
+</AccordionGroup>
+
+## Non-Matching Pairs
+
+When cards don't match, they flip back face-down:
+
+```javascript
+// Non-match logic from index.html:141-154
+else {
+    // NOT A PAIR
+    setTimeout(() => {
+        card1.setAttribute('animation', 'property: rotation; to: 0 0 0; dur: 250');
+        card2.setAttribute('animation', 'property: rotation; to: 0 0 0; dur: 250');
+        setTimeout(() => {
+            card1.setAttribute('src', '#back');
+            card2.setAttribute('src', '#back');
+            card1.dataset.flipped = "false";
+            card2.dataset.flipped = "false";
+            flippedCards = [];
+            lockBoard = false;
+        }, 125);
+    }, 800);
+}
+```
+
+- **800ms** initial delay to let players memorize the cards
+- **250ms** rotation animation back to 0°
+- **125ms** into the rotation, textures switch back to `#back` (back of card)
+- **Total time**: ~925ms before the board unlocks
+
+<Info>
+  This timing penalty for wrong guesses adds strategic depth—random guessing wastes precious seconds.
+</Info>
+
+## Visual Feedback Summary
+
+| Condition | Status Text | Overlay Effect | Reload Delay |
+|-----------|-------------|----------------|---------------|
+| **Victory** | SALISTE CON VIDA | None | 4 seconds |
+| **Defeat** | PERDISTE TU ALMA | Red fade-in | 3 seconds |
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Timer System" icon="clock" href="/gameplay/timer-system">
+    Deep dive into the 40-second countdown
+  </Card>
+  <Card title="Overview" icon="book" href="/gameplay/overview">
+    Return to game mechanics overview
+  </Card>
+</CardGroup>

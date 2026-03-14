@@ -1,0 +1,307 @@
+---
+title: 'Timer System'
+description: 'How the 40-second countdown works and game pacing mechanics'
+---
+
+## Overview
+
+The timer is the core tension mechanic in Memorama WebVR. You have exactly **40 seconds** from your first card flip to find all 4 matching pairs, or you lose your soul to the forsaken casino.
+
+<Warning>
+  The timer does NOT start when the game loads. It begins **only** when you interact with your first card.
+</Warning>
+
+## Timer Initialization
+
+The timer state is managed by three key variables:
+
+```javascript
+// Timer state from index.html:60-62
+let timeLeft = 40;
+let timerInterval;
+let gameActive = false;
+```
+
+<AccordionGroup>
+  <Accordion title="timeLeft">
+    Stores remaining seconds (default: 40). Decrements by 1 every second once active.
+  </Accordion>
+  
+  <Accordion title="timerInterval">
+    Reference to the `setInterval` timer. Used to stop the countdown with `clearInterval()`.
+  </Accordion>
+  
+  <Accordion title="gameActive">
+    Boolean flag preventing the timer from starting multiple times. Set to `true` on first card interaction.
+  </Accordion>
+</AccordionGroup>
+
+## Timer Start Logic
+
+The timer activates when you hover over your first card:
+
+```javascript
+// Timer start function from index.html:67-77
+function startTimer() {
+    if(!gameActive) {
+        gameActive = true;
+        document.querySelector('#bgMusic').components.sound.playSound();
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            timerText.setAttribute('value', `VIDA: ${timeLeft}s`);
+            if(timeLeft <= 0) die();
+        }, 1000);
+    }
+}
+```
+
+<Steps>
+  <Step title="First Interaction Check">
+    The `if(!gameActive)` guard ensures the timer only starts once. Subsequent card flips won't trigger this function again.
+  </Step>
+
+  <Step title="Game Activation">
+    Sets `gameActive = true` to prevent re-initialization.
+  </Step>
+
+  <Step title="Background Music">
+    Starts the looping background music (`fondo.mp3` at 30% volume) to create atmosphere:
+    
+    ```html
+    <!-- Music entity from index.html:21 -->
+    <a-entity id="bgMusic" sound="src: #background-music; loop: true; volume: 0.3"></a-entity>
+    ```
+  </Step>
+
+  <Step title="Countdown Interval">
+    Creates a `setInterval` that executes every 1000ms (1 second):
+    - Decrements `timeLeft` by 1
+    - Updates the visual timer display
+    - Checks for game-over condition
+  </Step>
+</Steps>
+
+## Visual Timer Display
+
+The timer appears as red text attached to the camera:
+
+```html
+<!-- Timer HUD from index.html:27 -->
+<a-text 
+  id="timerText" 
+  value="VIDA: 40s" 
+  color="red" 
+  position="0 0.5 -1" 
+  scale="0.4 0.4 0.4" 
+  align="center">
+</a-text>
+```
+
+<AccordionGroup>
+  <Accordion title="Position">
+    `(0, 0.5, -1)` places the timer 1 unit in front of the camera, 0.5 units above the center. It moves with your view.
+  </Accordion>
+  
+  <Accordion title="Text Format">
+    The text displays as `VIDA: {timeLeft}s` (Spanish for "LIFE"). Example: `VIDA: 40s`, `VIDA: 39s`, etc.
+  </Accordion>
+  
+  <Accordion title="Styling">
+    Red color (#ff0000) and 0.4 scale make it clearly visible without obstructing the view.
+  </Accordion>
+</AccordionGroup>
+
+### Timer Update Mechanism
+
+Every second, the display updates:
+
+```javascript
+// From index.html:73
+timerText.setAttribute('value', `VIDA: ${timeLeft}s`);
+```
+
+This uses A-Frame's `setAttribute` to dynamically change the text component's value.
+
+## Game-Over Condition
+
+Each tick checks if time has expired:
+
+```javascript
+// From index.html:74
+if(timeLeft <= 0) die();
+```
+
+When `timeLeft` reaches 0, the `die()` function executes immediately:
+
+```javascript
+// Death function from index.html:79-84
+function die() {
+    clearInterval(timerInterval);
+    statusText.setAttribute('value', 'PERDISTE TU ALMA');
+    deathOverlay.setAttribute('animation', 'property: material.opacity; to: 1; dur: 1000');
+    setTimeout(() => location.reload(), 3000);
+}
+```
+
+<Note>
+  The timer stops at 0—it will not display negative values. The `clearInterval` call ensures this.
+</Note>
+
+## Timer Stop on Victory
+
+When all 4 pairs are found, the timer freezes:
+
+```javascript
+// Win function from index.html:158-162
+function win() {
+    clearInterval(timerInterval);
+    statusText.setAttribute('value', 'SALISTE CON VIDA');
+    setTimeout(() => location.reload(), 4000);
+}
+```
+
+Your remaining time is preserved and displayed, showing how quickly you completed the challenge.
+
+## Time Pressure Analysis
+
+Let's break down the time budget:
+
+### Animation Time Costs
+
+**Per matching pair**:
+- 600ms delay before cards disappear
+- 300ms shrink animation
+- **Total**: ~900ms unavoidable wait
+
+**Per non-matching pair**:
+- 800ms memory delay
+- 250ms flip-back animation
+- 125ms texture swap
+- **Total**: ~1,175ms unavoidable wait
+
+### Theoretical Best Case
+
+If you match all 4 pairs perfectly (no wrong guesses):
+
+```
+4 pairs × 900ms = 3,600ms (3.6 seconds)
+Remaining time: 40s - 3.6s = 36.4s
+```
+
+<Info>
+  Even with perfect play, you'll spend at least 3.6 seconds waiting for animations. The remaining 36.4 seconds is your decision-making time.
+</Info>
+
+### Realistic Time Budget
+
+With 2-3 wrong guesses (common for first-time players):
+
+```
+4 matches: 4 × 900ms = 3,600ms
+3 misses:  3 × 1,175ms = 3,525ms
+Total locked time: 7,125ms (7.1 seconds)
+Remaining time: 40s - 7.1s = 32.9s
+```
+
+<Warning>
+  Every wrong guess costs you over 1 second of locked waiting time. With only 40 seconds total, **memory and strategy** are critical.
+</Warning>
+
+## Board Lock During Timing
+
+While animations play, the board locks to prevent interaction:
+
+```javascript
+// From index.html:126
+lockBoard = true; // TOTAL BLOCK until the pair is processed
+```
+
+This prevents you from "spending" time by flipping more cards during animations. The time pressure forces you to:
+
+1. **Observe carefully** during the initial delay
+2. **Remember positions** to avoid repeated wrong guesses
+3. **Act quickly** when the board unlocks
+
+## Timer Precision
+
+The `setInterval` uses 1000ms (1 second) precision:
+
+```javascript
+// From index.html:71
+timerInterval = setInterval(() => { ... }, 1000);
+```
+
+<Note>
+  JavaScript `setInterval` is not perfectly precise. Browser throttling, tab backgrounding, and system load can cause slight drift (±50ms typical). However, this is negligible for a 40-second game.
+</Note>
+
+## No Pause Mechanic
+
+Once started, the timer **cannot be paused**. Even if you:
+- Stop interacting with cards
+- Move the camera away
+- Switch browser tabs
+
+The countdown continues until:
+- Time expires (death)
+- All pairs are found (victory)
+
+## Strategic Timing Tips
+
+<Steps>
+  <Step title="Don't rush your first card">
+    Take time to plan before hovering over the first card. The timer doesn't start until you interact.
+  </Step>
+
+  <Step title="Use the memory delay">
+    The 800ms delay when cards don't match is intentional—use it to memorize positions instead of panicking.
+  </Step>
+
+  <Step title="Minimize wrong guesses">
+    Each mistake costs ~1.2 seconds of locked time. With 40 seconds total, you can afford ~4-5 mistakes maximum.
+  </Step>
+
+  <Step title="Complete quickly for bragging rights">
+    Your remaining time is displayed when you win. Speedrunners should aim for 30+ seconds remaining.
+  </Step>
+</Steps>
+
+## Timer Edge Cases
+
+### Winning on the last second
+
+If you match the 4th pair when `timeLeft = 1`, the win condition triggers before the next timer tick:
+
+```javascript
+// Win check happens immediately after pair increment
+if (pairsFound === 4) win();
+```
+
+The `win()` function calls `clearInterval(timerInterval)`, preventing the death condition.
+
+### Death during animation
+
+If the timer reaches 0 while cards are flipping, `die()` executes immediately:
+
+```javascript
+// Death check runs every second
+if(timeLeft <= 0) die();
+```
+
+The death overlay animation (1 second) plays, but card animations may continue underneath—though interaction is disabled via:
+
+```javascript
+// From index.html:105
+if (lockBoard || this.dataset.flipped === "true" || timeLeft <= 0) return;
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Objectives" icon="trophy" href="/gameplay/objectives">
+    Learn about win and lose conditions
+  </Card>
+  <Card title="Controls" icon="hand-pointer" href="/gameplay/controls">
+    Master the board lock mechanism
+  </Card>
+</CardGroup>

@@ -1,0 +1,475 @@
+---
+title: 'A-Frame Components'
+description: 'Complete reference for all A-Frame components and entities used in Memorama'
+---
+
+## Scene Configuration
+
+### a-scene
+
+The root A-Frame scene entity with atmospheric fog effects.
+
+<ParamField path="fog" type="object">
+  Creates the eerie casino atmosphere
+  
+  <ResponseField name="type" type="string" default="exponential">
+    Fog distribution type - uses exponential for dramatic effect
+  </ResponseField>
+  
+  <ResponseField name="color" type="string" default="#0a0000">
+    Dark red fog color (#0a0000)
+  </ResponseField>
+  
+  <ResponseField name="density" type="number" default="0.15">
+    Fog density value (0.15)
+  </ResponseField>
+</ParamField>
+
+```html
+<a-scene fog="type: exponential; color: #0a0000; density: 0.15">
+  <!-- Scene content -->
+</a-scene>
+```
+
+## Camera & Controls
+
+### Camera Rig
+
+The camera rig positions the player's viewpoint in the scene.
+
+<ParamField path="rig" type="entity">
+  Container entity for camera positioning
+  
+  <ResponseField name="position" type="vec3" default="0 1.6 1.2">
+    Positions camera at eye level (1.6m height) slightly forward from table
+  </ResponseField>
+</ParamField>
+
+### Camera Entity
+
+<ParamField path="camera" type="entity">
+  Main camera with look and movement controls
+  
+  <ResponseField name="camera" type="component">
+    Enables first-person perspective
+  </ResponseField>
+  
+  <ResponseField name="look-controls" type="component">
+    Mouse/VR headset rotation controls
+  </ResponseField>
+  
+  <ResponseField name="wasd-controls" type="component">
+    Keyboard movement controls
+    - **acceleration**: 10 (fast movement speed)
+  </ResponseField>
+  
+  <ResponseField name="rotation" type="vec3" default="-25 0 0">
+    Tilts camera down 25° to look at table
+  </ResponseField>
+</ParamField>
+
+```html
+<a-entity id="rig" position="0 1.6 1.2">
+  <a-entity id="camera" camera look-controls wasd-controls="acceleration: 10" rotation="-25 0 0">
+    <!-- Camera children -->
+  </a-entity>
+</a-entity>
+```
+
+### Cursor
+
+<ParamField path="cursor" type="a-cursor">
+  VR-friendly cursor for card interaction
+  
+  <ResponseField name="raycaster" type="component">
+    Targets only clickable objects
+    - **objects**: `.clickable` (only cards)
+  </ResponseField>
+  
+  <ResponseField name="material" type="component">
+    Red cursor color (#ff0000)
+  </ResponseField>
+  
+  <ResponseField name="scale" type="vec3" default="0.5 0.5 0.5">
+    Half-size cursor for precision
+  </ResponseField>
+</ParamField>
+
+## UI Elements
+
+### Timer Text
+
+<ParamField path="timerText" type="a-text">
+  HUD element displaying remaining time
+  
+  <ResponseField name="value" type="string" default="VIDA: 40s">
+    Initial timer display text
+  </ResponseField>
+  
+  <ResponseField name="color" type="string" default="red">
+    Red text for urgency
+  </ResponseField>
+  
+  <ResponseField name="position" type="vec3" default="0 0.5 -1">
+    Positioned above center of view
+  </ResponseField>
+  
+  <ResponseField name="scale" type="vec3" default="0.4 0.4 0.4">
+    Readable size without blocking view
+  </ResponseField>
+  
+  <ResponseField name="align" type="string" default="center">
+    Center-aligned text
+  </ResponseField>
+</ParamField>
+
+### Status Text
+
+<ParamField path="statusText" type="a-text">
+  Large text displaying win/lose messages
+  
+  <ResponseField name="value" type="string" default="">
+    Initially empty, shows "SALISTE CON VIDA" or "PERDISTE TU ALMA"
+  </ResponseField>
+  
+  <ResponseField name="color" type="string" default="red">
+    Red dramatic text
+  </ResponseField>
+  
+  <ResponseField name="position" type="vec3" default="0 2 -3">
+    High and centered in scene
+  </ResponseField>
+  
+  <ResponseField name="scale" type="vec3" default="2 2 2">
+    Large scale for visibility
+  </ResponseField>
+  
+  <ResponseField name="align" type="string" default="center">
+    Center-aligned
+  </ResponseField>
+</ParamField>
+
+### Death Overlay
+
+<ParamField path="deathOverlay" type="a-plane">
+  Dark red overlay that fades in on game over
+  
+  <ResponseField name="position" type="vec3" default="0 0 -0.05">
+    Very close to camera
+  </ResponseField>
+  
+  <ResponseField name="width" type="number" default="2">
+    Wide enough to cover view
+  </ResponseField>
+  
+  <ResponseField name="height" type="number" default="2">
+    Tall enough to cover view
+  </ResponseField>
+  
+  <ResponseField name="color" type="string" default="#300">
+    Dark red (#300)
+  </ResponseField>
+  
+  <ResponseField name="material.opacity" type="number" default="0">
+    Starts transparent, animates to 1
+  </ResponseField>
+  
+  <ResponseField name="material.transparent" type="boolean" default="true">
+    Enables opacity animation
+  </ResponseField>
+</ParamField>
+
+## Lighting
+
+### Ambient Light
+
+<ParamField path="ambient" type="a-light">
+  Dim base lighting
+  
+  <ResponseField name="type" type="string" default="ambient">
+    Global ambient illumination
+  </ResponseField>
+  
+  <ResponseField name="color" type="string" default="#444">
+    Dark gray for moody atmosphere
+  </ResponseField>
+</ParamField>
+
+### Flickering Point Light
+
+<ParamField path="flicker" type="a-light">
+  Animated red light creating horror atmosphere
+  
+  <ResponseField name="type" type="string" default="point">
+    Point light source
+  </ResponseField>
+  
+  <ResponseField name="intensity" type="number" default="1">
+    Base intensity
+  </ResponseField>
+  
+  <ResponseField name="position" type="vec3" default="0 3 0">
+    Above the table
+  </ResponseField>
+  
+  <ResponseField name="color" type="string" default="#f00">
+    Red light (#f00)
+  </ResponseField>
+  
+  <ResponseField name="animation" type="component">
+    Flicker animation properties:
+    - **property**: intensity
+    - **from**: 0.2
+    - **to**: 1.2
+    - **dur**: 150ms (fast flicker)
+    - **loop**: true
+    - **dir**: alternate (back and forth)
+  </ResponseField>
+</ParamField>
+
+```html
+<a-light id="flicker" type="point" intensity="1" position="0 3 0" color="#f00"
+         animation="property: intensity; from: 0.2; to: 1.2; dur: 150; loop: true; dir: alternate"></a-light>
+```
+
+## Environment
+
+### Sky
+
+<ParamField path="sky" type="a-sky">
+  Black background sky
+  
+  <ResponseField name="color" type="string" default="#000">
+    Pure black (#000)
+  </ResponseField>
+</ParamField>
+
+### Floor
+
+<ParamField path="floor" type="a-plane">
+  Textured casino floor
+  
+  <ResponseField name="src" type="string" default="#carpet">
+    References carpet texture asset
+  </ResponseField>
+  
+  <ResponseField name="rotation" type="vec3" default="-90 0 0">
+    Rotated to be horizontal
+  </ResponseField>
+  
+  <ResponseField name="width" type="number" default="30">
+    Large floor area
+  </ResponseField>
+  
+  <ResponseField name="height" type="number" default="30">
+    Large floor area (depth in 3D)
+  </ResponseField>
+  
+  <ResponseField name="color" type="string" default="#222">
+    Dark tint (#222)
+  </ResponseField>
+</ParamField>
+
+### Back Wall
+
+<ParamField path="wall" type="a-box">
+  Stone textured wall behind the table
+  
+  <ResponseField name="src" type="string" default="#stone">
+    Stone texture asset
+  </ResponseField>
+  
+  <ResponseField name="position" type="vec3" default="0 4 -6">
+    Behind and above player
+  </ResponseField>
+  
+  <ResponseField name="width" type="number" default="20">
+    Wide wall
+  </ResponseField>
+  
+  <ResponseField name="height" type="number" default="10">
+    Tall wall
+  </ResponseField>
+  
+  <ResponseField name="depth" type="number" default="0.5">
+    Thin wall
+  </ResponseField>
+  
+  <ResponseField name="color" type="string" default="#333">
+    Dark tint
+  </ResponseField>
+</ParamField>
+
+## Props & Decorations
+
+### Debris Box
+
+```html
+<a-box color="#111" position="-2 0.3 -2" rotation="0 30 0" 
+       width="0.6" height="0.6" depth="0.6"></a-box>
+```
+
+Small dark box debris (0.6m cube) rotated 30° at position (-2, 0.3, -2).
+
+### Debris Cylinder
+
+```html
+<a-cylinder color="#050505" position="2 0.5 -2.5" 
+            radius="0.3" height="1" rotation="0 0 15"></a-cylinder>
+```
+
+Tilted cylinder debris at position (2, 0.5, -2.5).
+
+### Casino Table
+
+Three-part table structure:
+
+<Accordion title="Table Leg">
+  ```html
+  <a-cylinder color="#111" position="0 0.4 0" radius="0.05" height="0.8"></a-cylinder>
+  ```
+  
+  Thin dark cylinder (0.05m radius, 0.8m height) at table center.
+</Accordion>
+
+<Accordion title="Table Top (Wood)">
+  ```html
+  <a-cylinder color="#1a0f00" position="0 0.8 0" radius="1" height="0.08"></a-cylinder>
+  ```
+  
+  Dark brown wood surface (1m radius, 0.08m thick).
+</Accordion>
+
+<Accordion title="Table Top (Felt)">
+  ```html
+  <a-cylinder color="#002200" position="0 0.81 0" radius="0.95" height="0.04"></a-cylinder>
+  ```
+  
+  Dark green felt playing surface (0.95m radius, slightly above wood).
+</Accordion>
+
+## Game Board
+
+### Board Container
+
+<ParamField path="board" type="a-entity">
+  Empty entity that holds dynamically generated card elements
+  
+  <ResponseField name="position" type="vec3" default="-0.3 0.85 0.2">
+    Positioned on table surface
+  </ResponseField>
+  
+  <ResponseField name="rotation" type="vec3" default="-90 0 0">
+    Rotated to lay flat on table
+  </ResponseField>
+  
+  <ResponseField name="scale" type="vec3" default="0.5 0.5 0.5">
+    Scaled to fit on table
+  </ResponseField>
+</ParamField>
+
+### Card (Dynamic)
+
+Cards are created dynamically in JavaScript:
+
+<ParamField path="card" type="a-box">
+  Individual memory card box
+  
+  <ResponseField name="position" type="vec3">
+    Calculated per card:
+    - **x**: `(index % 4) * 0.4` (4 columns, 0.4m spacing)
+    - **y**: `Math.floor(index / 4) * -0.6` (2 rows, 0.6m spacing)
+    - **z**: 0
+  </ResponseField>
+  
+  <ResponseField name="width" type="number" default="0.35">
+    Card width (0.35m)
+  </ResponseField>
+  
+  <ResponseField name="height" type="number" default="0.5">
+    Card height (0.5m)
+  </ResponseField>
+  
+  <ResponseField name="depth" type="number" default="0.01">
+    Very thin card (0.01m)
+  </ResponseField>
+  
+  <ResponseField name="src" type="string" default="#back">
+    Initially shows back texture
+  </ResponseField>
+  
+  <ResponseField name="class" type="string" default="clickable">
+    Makes card targetable by raycaster
+  </ResponseField>
+  
+  <ResponseField name="data-id" type="string">
+    Image identifier (img1, img2, img3, or img4)
+  </ResponseField>
+  
+  <ResponseField name="data-flipped" type="string" default="false">
+    Tracks flip state ("true" or "false")
+  </ResponseField>
+</ParamField>
+
+```javascript
+const card = document.createElement('a-box');
+card.setAttribute('position', `${x} ${y} 0`);
+card.setAttribute('width', '0.35');
+card.setAttribute('height', '0.5');
+card.setAttribute('depth', '0.01');
+card.setAttribute('src', '#back');
+card.setAttribute('class', 'clickable');
+card.dataset.id = imgId;
+card.dataset.flipped = "false";
+```
+
+## Audio Components
+
+### Background Music Entity
+
+<ParamField path="bgMusic" type="a-entity">
+  Plays looping background music
+  
+  <ResponseField name="sound.src" type="string" default="#background-music">
+    References background audio asset
+  </ResponseField>
+  
+  <ResponseField name="sound.loop" type="boolean" default="true">
+    Loops continuously
+  </ResponseField>
+  
+  <ResponseField name="sound.volume" type="number" default="0.3">
+    30% volume (not too loud)
+  </ResponseField>
+</ParamField>
+
+```html
+<a-entity id="bgMusic" sound="src: #background-music; loop: true; volume: 0.3"></a-entity>
+```
+
+Played via JavaScript:
+```javascript
+document.querySelector('#bgMusic').components.sound.playSound();
+```
+
+### Click Sound
+
+Played dynamically when hovering cards:
+
+```javascript
+new Audio(document.querySelector('#click-sound').src).play();
+```
+
+## See Also
+
+<CardGroup cols={2}>
+  <Card title="Game State" icon="database" href="/reference/game-state">
+    JavaScript variables and game logic
+  </Card>
+  <Card title="Assets" icon="image" href="/reference/assets">
+    Audio and image files reference
+  </Card>
+  <Card title="Animations" icon="film" href="/reference/animations">
+    Animation timings and properties
+  </Card>
+</CardGroup>

@@ -1,0 +1,192 @@
+---
+title: 'Game Controls'
+description: 'How to interact with the Memorama game using VR cursor and mouse controls'
+---
+
+## Control Methods
+
+Memorama WebVR uses **gaze-based interaction** through A-Frame's cursor system. You can play using:
+
+- **VR Headset**: Look at cards to interact (gaze control)
+- **Desktop Browser**: Move your mouse to look around, hover over cards to flip them
+
+<Note>
+  The game uses `mouseenter` events, meaning cards flip automatically when your cursor hovers over them. There's no clicking required.
+</Note>
+
+## VR Cursor Configuration
+
+The red cursor is attached to the camera and raycasts onto clickable objects:
+
+```html
+<!-- Cursor setup from index.html:25 -->
+<a-cursor 
+  id="cursor" 
+  raycaster="objects: .clickable" 
+  material="color: #ff0000" 
+  scale="0.5 0.5 0.5">
+</a-cursor>
+```
+
+<AccordionGroup>
+  <Accordion title="Raycaster Target">
+    Only objects with the `.clickable` class can be interacted with. All 8 game cards have this class applied.
+  </Accordion>
+  
+  <Accordion title="Cursor Appearance">
+    The cursor appears as a red ring (color: `#ff0000`) scaled to 0.5 of the default size for better visibility.
+  </Accordion>
+  
+  <Accordion title="Camera Position">
+    The camera rig is positioned at `(0, 1.6, 1.2)` with a -25° downward tilt, providing an optimal view of the table.
+    
+    ```html
+    <!-- Camera setup from index.html:23-24 -->
+    <a-entity id="rig" position="0 1.6 1.2">
+      <a-entity id="camera" camera look-controls wasd-controls="acceleration: 10" rotation="-25 0 0">
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Card Interaction Logic
+
+When your cursor enters a card, several checks occur before the card flips:
+
+```javascript
+// Interaction handler from index.html:103-110
+card.addEventListener('mouseenter', function() {
+    // If the board is locked or the card is already flipped, DO NOTHING
+    if (lockBoard || this.dataset.flipped === "true" || timeLeft <= 0) return;
+    
+    startTimer();
+    new Audio(document.querySelector('#click-sound').src).play();
+    flip(this);
+});
+```
+
+<Steps>
+  <Step title="Validation Check">
+    The game checks three conditions:
+    - Is the board locked? (see [Board Lock Mechanism](#board-lock-mechanism))
+    - Is this card already flipped?
+    - Has the timer expired (timeLeft ≤ 0)?
+    
+    If any condition is true, the interaction is **ignored**.
+  </Step>
+
+  <Step title="Timer Activation">
+    If this is the first card interaction, `startTimer()` is called to begin the 40-second countdown and play background music.
+  </Step>
+
+  <Step title="Audio Feedback">
+    A card flip sound effect plays using the `#click-sound` audio asset.
+  </Step>
+
+  <Step title="Card Flip">
+    The `flip(this)` function executes the card flip animation and matching logic.
+  </Step>
+</Steps>
+
+## Board Lock Mechanism
+
+The `lockBoard` variable is the **master lock** that prevents interaction issues:
+
+```javascript
+// From index.html:64
+let lockBoard = false; // LLAVE MAESTRA PARA EVITAR TRABAS
+```
+
+<Warning>
+  The board lock is **critical** for preventing players from flipping more than 2 cards simultaneously, which would break the matching logic.
+</Warning>
+
+### When the Board Locks
+
+The board locks immediately when 2 cards are flipped:
+
+```javascript
+// Lock activation from index.html:125-126
+if (flippedCards.length === 2) {
+    lockBoard = true; // TOTAL BLOCK until the pair is processed
+```
+
+### When the Board Unlocks
+
+The lock releases after the pair is processed:
+
+**For matching pairs** (after 600ms):
+```javascript
+// From index.html:137
+lockBoard = false; // RELEASE
+```
+
+**For non-matching pairs** (after 800ms + 125ms flip animation):
+```javascript
+// From index.html:151
+lockBoard = false; // RELEASE
+```
+
+<Info>
+  During the lock period (600-925ms depending on match result), hovering over any card will be ignored. This ensures animations complete smoothly.
+</Info>
+
+## Card States
+
+Each card tracks its flip state using a data attribute:
+
+```javascript
+// Card state initialization from index.html:101
+card.dataset.flipped = "false";
+```
+
+- `"false"`: Card is face-down, showing back texture
+- `"true"`: Card is face-up, showing image
+
+When non-matching cards flip back, their state resets:
+
+```javascript
+// State reset from index.html:148-149
+card1.dataset.flipped = "false";
+card2.dataset.flipped = "false";
+```
+
+## Movement Controls
+
+While the primary interaction is card flipping, you can move the camera:
+
+```html
+<!-- From index.html:24 -->
+look-controls wasd-controls="acceleration: 10"
+```
+
+- **Mouse/VR Head Movement**: Look around the environment
+- **WASD Keys** (desktop): Move forward/left/backward/right with 10x acceleration
+- **Arrow Keys** (desktop): Alternative movement option
+
+<Note>
+  Movement is optional. The default camera position and rotation provide a perfect view of the game board.
+</Note>
+
+## Audio Feedback
+
+Two audio assets provide feedback:
+
+```html
+<!-- Audio assets from index.html:17-18 -->
+<audio id="click-sound" src="cartas.mp3"></audio>
+<audio id="background-music" src="fondo.mp3" preload="auto"></audio>
+```
+
+- **Click Sound** (`cartas.mp3`): Plays on each card flip
+- **Background Music** (`fondo.mp3`): Loops continuously at 30% volume once the game starts
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Timer System" icon="clock" href="/gameplay/timer-system">
+    Learn how the 40-second countdown works
+  </Card>
+  <Card title="Objectives" icon="trophy" href="/gameplay/objectives">
+    Understand win and lose conditions
+  </Card>
+</CardGroup>

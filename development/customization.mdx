@@ -1,0 +1,505 @@
+---
+title: 'Customization Guide'
+description: 'How to modify cards, timer, difficulty, and styling'
+---
+
+## Card Customization
+
+### Adding/Changing Card Images
+
+Card images are defined in `<a-assets>` at `index.html:9-14`:
+
+```html
+<a-assets>
+  <img id="img1" src="img/img1.jpg">
+  <img id="img2" src="img/img2.jpg">
+  <img id="img3" src="img/img3.jpg">
+  <img id="img4" src="img/img4.jpg">
+  <img id="back" src="img/atras.jpeg">
+</a-assets>
+```
+
+<Steps>
+  <Step title="Replace image files">
+    Replace `img/img1.jpg` through `img/img4.jpg` with your own images
+  </Step>
+  <Step title="Change card back">
+    Replace `img/atras.jpeg` to customize the back texture
+  </Step>
+  <Step title="Add more pairs">
+    Add new `<img>` tags with unique IDs (e.g., `id="img5"`)
+  </Step>
+  <Step title="Update cardData array">
+    Modify the array at `index.html:65` to include new pairs
+  </Step>
+</Steps>
+
+#### Example: 6 Pairs (12 Cards)
+
+```html
+<!-- In <a-assets> -->
+<img id="img5" src="img/img5.jpg">
+<img id="img6" src="img/img6.jpg">
+```
+
+```javascript
+// At index.html:65
+const cardData = [
+    'img1', 'img1', 
+    'img2', 'img2', 
+    'img3', 'img3', 
+    'img4', 'img4',
+    'img5', 'img5',  // New pair
+    'img6', 'img6'   // New pair
+];
+```
+
+<Warning>
+  You must also update the grid layout logic at `index.html:90-91` to accommodate more cards (e.g., 3x4 grid instead of 4x2).
+</Warning>
+
+### Changing Card Dimensions
+
+Card size is set at `index.html:94-96`:
+
+```javascript
+card.setAttribute('width', '0.35'); 
+card.setAttribute('height', '0.5'); 
+card.setAttribute('depth', '0.01');
+```
+
+<CodeGroup>
+```javascript Larger Cards
+card.setAttribute('width', '0.5');   // 43% wider
+card.setAttribute('height', '0.7');  // 40% taller
+card.setAttribute('depth', '0.02');  // Thicker
+```
+
+```javascript Smaller Cards
+card.setAttribute('width', '0.25');  // 29% smaller
+card.setAttribute('height', '0.35'); // 30% shorter
+card.setAttribute('depth', '0.005'); // Thinner
+```
+</CodeGroup>
+
+<Note>
+  Remember to adjust spacing in the grid layout (`index.html:90-91`) if you change card dimensions.
+</Note>
+
+### Grid Layout Customization
+
+Current 4x2 grid defined at `index.html:90-91`:
+
+```javascript
+const x = (index % 4) * 0.4;           // 4 columns, 0.4 spacing
+const y = Math.floor(index / 4) * -0.6; // 2 rows, 0.6 spacing
+```
+
+#### Example: 3x4 Grid (12 Cards)
+
+```javascript
+const x = (index % 3) * 0.5;           // 3 columns, 0.5 spacing
+const y = Math.floor(index / 3) * -0.7; // 4 rows, 0.7 spacing
+```
+
+#### Example: 5x2 Grid (10 Cards)
+
+```javascript
+const x = (index % 5) * 0.35;          // 5 columns, 0.35 spacing
+const y = Math.floor(index / 5) * -0.6; // 2 rows, 0.6 spacing
+```
+
+---
+
+## Difficulty Settings
+
+### Timer Duration
+
+Initial time is set at `index.html:60`:
+
+```javascript
+let timeLeft = 40; // 40 seconds to complete game
+```
+
+<Tabs>
+  <Tab title="Easy (60s)">
+    ```javascript
+    let timeLeft = 60;
+    ```
+    Gives players more time to memorize cards.
+  </Tab>
+  
+  <Tab title="Medium (40s)">
+    ```javascript
+    let timeLeft = 40; // Default
+    ```
+    Balanced difficulty.
+  </Tab>
+  
+  <Tab title="Hard (25s)">
+    ```javascript
+    let timeLeft = 25;
+    ```
+    Requires quick thinking and memory.
+  </Tab>
+  
+  <Tab title="Extreme (15s)">
+    ```javascript
+    let timeLeft = 15;
+    ```
+    Nearly impossible without luck.
+  </Tab>
+</Tabs>
+
+### Card Visibility Duration
+
+When cards don't match, they stay visible before flipping back. Set at `index.html:142`:
+
+```javascript
+setTimeout(() => {
+    // Flip cards back
+}, 800); // 800ms to memorize
+```
+
+<CodeGroup>
+```javascript Easy - 1500ms
+setTimeout(() => {
+    // Flip cards back
+}, 1500); // 1.5 seconds to memorize
+```
+
+```javascript Medium - 800ms
+setTimeout(() => {
+    // Flip cards back
+}, 800); // Default
+```
+
+```javascript Hard - 400ms
+setTimeout(() => {
+    // Flip cards back
+}, 400); // Quick memory challenge
+```
+</CodeGroup>
+
+### Number of Pairs
+
+Change win condition at `index.html:138`:
+
+```javascript
+if (pairsFound === 4) win(); // 4 pairs = 8 cards
+```
+
+For 6 pairs (12 cards):
+
+```javascript
+if (pairsFound === 6) win(); // 6 pairs = 12 cards
+```
+
+<Warning>
+  Must match the number of unique pairs in `cardData` array at `index.html:65`.
+</Warning>
+
+---
+
+## Audio Customization
+
+### Background Music
+
+Defined at `index.html:18`:
+
+```html
+<audio id="background-music" src="fondo.mp3" preload="auto"></audio>
+```
+
+And played at `index.html:70`:
+
+```javascript
+document.querySelector('#bgMusic').components.sound.playSound();
+```
+
+<Steps>
+  <Step title="Replace audio file">
+    Replace `fondo.mp3` with your own music loop
+  </Step>
+  <Step title="Adjust volume">
+    Modify `volume` at `index.html:21` (default: 0.3)
+  </Step>
+</Steps>
+
+```html
+<a-entity id="bgMusic" sound="src: #background-music; loop: true; volume: 0.5">
+```
+
+### Card Flip Sound
+
+Defined at `index.html:17`:
+
+```html
+<audio id="click-sound" src="cartas.mp3"></audio>
+```
+
+Played at `index.html:108`:
+
+```javascript
+new Audio(document.querySelector('#click-sound').src).play();
+```
+
+Replace `cartas.mp3` with your preferred sound effect.
+
+<Note>
+  New Audio instances are created each time to allow overlapping sounds when flipping multiple cards quickly.
+</Note>
+
+---
+
+## Visual Styling
+
+### Atmosphere Colors
+
+#### Fog Color
+
+Set at `index.html:8`:
+
+```html
+<a-scene fog="type: exponential; color: #0a0000; density: 0.15">
+```
+
+<CodeGroup>
+```html Horror Red (Default)
+<a-scene fog="type: exponential; color: #0a0000; density: 0.15">
+```
+
+```html Mysterious Purple
+<a-scene fog="type: exponential; color: #1a0030; density: 0.15">
+```
+
+```html Toxic Green
+<a-scene fog="type: exponential; color: #001a00; density: 0.15">
+```
+
+```html No Fog
+<a-scene>
+<!-- Remove fog attribute entirely -->
+```
+</CodeGroup>
+
+#### Lighting Color
+
+Flickering light at `index.html:33`:
+
+```html
+<a-light id="flicker" type="point" intensity="1" position="0 3 0" color="#f00"
+         animation="property: intensity; from: 0.2; to: 1.2; dur: 150; 
+                    loop: true; dir: alternate">
+```
+
+Change `color="#f00"` to any hex color:
+- `#00f` - Blue
+- `#0f0` - Green
+- `#ff0` - Yellow
+- `#fff` - White
+
+### Text Styling
+
+#### Timer Text
+
+At `index.html:27`:
+
+```html
+<a-text id="timerText" value="VIDA: 40s" color="red" 
+        position="0 0.5 -1" scale="0.4 0.4 0.4" align="center">
+```
+
+<Tabs>
+  <Tab title="Color">
+    ```html
+    color="#00ff00"  <!-- Green -->
+    color="yellow"   <!-- Yellow -->
+    color="white"    <!-- White -->
+    ```
+  </Tab>
+  
+  <Tab title="Size">
+    ```html
+    scale="0.6 0.6 0.6"  <!-- Larger -->
+    scale="0.3 0.3 0.3"  <!-- Smaller -->
+    ```
+  </Tab>
+  
+  <Tab title="Position">
+    ```html
+    position="0 0.7 -1"   <!-- Higher -->
+    position="-0.5 0.5 -1" <!-- Left side -->
+    ```
+  </Tab>
+</Tabs>
+
+#### Status Messages
+
+Win message at `index.html:160`:
+
+```javascript
+statusText.setAttribute('value', 'SALISTE CON VIDA');
+```
+
+Lose message at `index.html:81`:
+
+```javascript
+statusText.setAttribute('value', 'PERDISTE TU ALMA');
+```
+
+Change to any text:
+
+```javascript
+statusText.setAttribute('value', 'YOU WIN!');
+statusText.setAttribute('value', 'GAME OVER');
+```
+
+### Death Overlay Effect
+
+At `index.html:82`:
+
+```javascript
+deathOverlay.setAttribute('animation', 'property: material.opacity; to: 1; dur: 1000');
+```
+
+<CodeGroup>
+```javascript Faster Fade
+deathOverlay.setAttribute('animation', 'property: material.opacity; to: 1; dur: 500');
+```
+
+```javascript Slower Fade
+deathOverlay.setAttribute('animation', 'property: material.opacity; to: 1; dur: 2000');
+```
+
+```javascript Different Color
+// Change overlay color at index.html:28
+<a-plane id="deathOverlay" position="0 0 -0.05" width="2" height="2" 
+         color="#003" material="opacity: 0; transparent: true"> // Dark blue
+```
+</CodeGroup>
+
+---
+
+## Environment Customization
+
+### Table Appearance
+
+Table structure at `index.html:43-47`:
+
+```html
+<a-entity position="0 0 0">
+  <!-- Leg -->
+  <a-cylinder color="#111" position="0 0.4 0" radius="0.05" height="0.8"></a-cylinder>
+  <!-- Wood top -->
+  <a-cylinder color="#1a0f00" position="0 0.8 0" radius="1" height="0.08"></a-cylinder> 
+  <!-- Green felt -->
+  <a-cylinder color="#002200" position="0 0.81 0" radius="0.95" height="0.04"></a-cylinder>
+</a-entity>
+```
+
+<Tabs>
+  <Tab title="Felt Color">
+    ```html
+    <!-- Blue felt -->
+    <a-cylinder color="#000044" position="0 0.81 0" radius="0.95" height="0.04">
+    
+    <!-- Red felt -->
+    <a-cylinder color="#440000" position="0 0.81 0" radius="0.95" height="0.04">
+    ```
+  </Tab>
+  
+  <Tab title="Table Size">
+    ```html
+    <!-- Larger table -->
+    <a-cylinder color="#1a0f00" position="0 0.8 0" radius="1.5" height="0.08">
+    <a-cylinder color="#002200" position="0 0.81 0" radius="1.45" height="0.04">
+    ```
+  </Tab>
+</Tabs>
+
+### Floor and Walls
+
+Floor at `index.html:37`:
+
+```html
+<a-plane src="#carpet" rotation="-90 0 0" width="30" height="30" color="#222">
+```
+
+Wall at `index.html:38`:
+
+```html
+<a-box src="#stone" position="0 4 -6" width="20" height="10" depth="0.5" color="#333">
+```
+
+Change `color` attribute to tint textures:
+- `color="#fff"` - Original texture colors
+- `color="#222"` - Darkened (default)
+- `color="#444"` - Lighter
+- `color="#f00"` - Red tint
+
+---
+
+## Animation Speeds
+
+All animations can be tuned at these locations:
+
+| Animation | Location | Default | Parameter |
+|-----------|----------|---------|----------|
+| Card flip | `index.html:122` | 250ms | `dur: 250` |
+| Card shrink | `index.html:133` | 300ms | `dur: 300` |
+| Light flicker | `index.html:34` | 150ms | `dur: 150` |
+| Death fade | `index.html:82` | 1000ms | `dur: 1000` |
+
+<Tip>
+  Lower `dur` values make animations faster and more intense. Higher values create slower, dramatic effects.
+</Tip>
+
+## Camera Settings
+
+Camera rig at `index.html:23-24`:
+
+```html
+<a-entity id="rig" position="0 1.6 1.2">
+  <a-entity id="camera" camera look-controls 
+            wasd-controls="acceleration: 10" rotation="-25 0 0">
+```
+
+<AccordionGroup>
+  <Accordion title="Camera Height">
+    Modify `position` Y value:
+    ```html
+    position="0 2.0 1.2"  <!-- Taller player -->
+    position="0 1.3 1.2"  <!-- Shorter player -->
+    ```
+  </Accordion>
+  
+  <Accordion title="Camera Distance">
+    Modify `position` Z value:
+    ```html
+    position="0 1.6 2.0"  <!-- Farther from table -->
+    position="0 1.6 0.5"  <!-- Closer to table -->
+    ```
+  </Accordion>
+  
+  <Accordion title="Camera Angle">
+    Modify `rotation` X value:
+    ```html
+    rotation="-35 0 0"  <!-- Look down more -->
+    rotation="-15 0 0"  <!-- Look down less -->
+    rotation="0 0 0"    <!-- Straight ahead -->
+    ```
+  </Accordion>
+  
+  <Accordion title="Movement Speed">
+    Modify `wasd-controls` acceleration:
+    ```html
+    wasd-controls="acceleration: 20"  <!-- Faster -->
+    wasd-controls="acceleration: 5"   <!-- Slower -->
+    ```
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  All customizations take effect immediately after saving `index.html` and refreshing the browser.
+</Note>

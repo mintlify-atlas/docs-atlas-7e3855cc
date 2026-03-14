@@ -1,0 +1,86 @@
+---
+title: Introduction
+description: Welcome to Memorama - A horror-themed WebVR memory card game where you race against time to escape the Forsaken Casino
+---
+
+# Welcome to Forsaken Casino
+
+Memorama is an immersive WebVR memory card game built with A-Frame. Step into a dark, atmospheric casino where you must match card pairs before time runs out - or lose your soul forever.
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Get the game running in minutes
+  </Card>
+  <Card title="Game Mechanics" icon="gamepad" href="/gameplay/overview">
+    Learn how to play and survive
+  </Card>
+  <Card title="Development Guide" icon="code" href="/development/architecture">
+    Understand the codebase and customize
+  </Card>
+  <Card title="A-Frame Reference" icon="cube" href="/reference/aframe-components">
+    Explore the VR components
+  </Card>
+</CardGroup>
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Immersive 3D Environment" icon="vr-cardboard">
+    Experience a fully realized horror casino in WebVR with atmospheric lighting and fog effects
+  </Card>
+  <Card title="Time-Based Challenge" icon="clock">
+    Survive the 40-second countdown timer as you race to find all matching pairs
+  </Card>
+  <Card title="Card Matching Mechanics" icon="cards-blank">
+    Classic memory game with smooth flip animations and lock mechanisms to prevent exploits
+  </Card>
+  <Card title="Atmospheric Audio" icon="volume-high">
+    Background music and sound effects that enhance the horror casino ambiance
+  </Card>
+</CardGroup>
+
+## Game Objective
+
+You have **40 seconds** to match all 4 pairs of cards hidden on the casino table. Hover over cards with your VR cursor to flip them. Match pairs to make them disappear. Find all pairs before time runs out to **escape with your soul intact**.
+
+Fail, and the death overlay consumes you.
+
+## Built With
+
+- **A-Frame 1.4.0** - WebVR framework for building 3D/VR experiences
+- **HTML5** - Single-page application with embedded JavaScript
+- **VR-Ready** - Works with VR headsets and desktop browsers
+
+## Quick Preview
+
+```html index.html
+<a-scene fog="type: exponential; color: #0a0000; density: 0.15">
+  <!-- Horror casino environment -->
+  <a-sky color="#000"></a-sky>
+  <a-plane src="#carpet" rotation="-90 0 0" width="30" height="30"></a-plane>
+  
+  <!-- Game board with cards -->
+  <a-entity id="board" position="-0.3 0.85 0.2"></a-entity>
+  
+  <!-- Timer display -->
+  <a-text id="timerText" value="VIDA: 40s" color="red"></a-text>
+</a-scene>
+```
+
+<Note>
+The game starts when you first interact with any card. The background music begins playing and the countdown timer activates immediately.
+</Note>
+
+## What's Next?
+
+<Steps>
+  <Step title="Run the Game">
+    Follow the [quickstart guide](/quickstart) to play Memorama in your browser
+  </Step>
+  <Step title="Learn the Mechanics">
+    Understand the [game mechanics](/gameplay/overview) and strategies to win
+  </Step>
+  <Step title="Explore the Code">
+    Dive into the [architecture](/development/architecture) to customize your own version
+  </Step>
+</Steps>
