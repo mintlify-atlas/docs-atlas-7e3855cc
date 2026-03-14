@@ -1,0 +1,65 @@
+{
+  "projectType": "frontend",
+  "projectName": "Memorama: Forsaken Casino",
+  "projectDescription": "A horror-themed WebVR memory card game built with A-Frame where players race against time to match pairs before losing their soul.",
+  "theme": "aspen",
+  "primaryColor": "#ff0000",
+  "lightColor": "#ff3333",
+  "darkColor": "#990000",
+  "navigation": {
+    "groups": [
+      {
+        "group": "Get Started",
+        "pages": [
+          "introduction",
+          "quickstart",
+          "setup"
+        ]
+      },
+      {
+        "group": "Game Mechanics",
+        "pages": [
+          "gameplay/overview",
+          "gameplay/controls",
+          "gameplay/objectives",
+          "gameplay/timer-system"
+        ]
+      },
+      {
+        "group": "Development",
+        "pages": [
+          "development/architecture",
+          "development/scene-structure",
+          "development/game-logic",
+          "development/customization"
+        ]
+      },
+      {
+        "group": "Reference",
+        "pages": [
+          "reference/aframe-components",
+          "reference/game-state",
+          "reference/assets",
+          "reference/animations"
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Immersive 3D WebVR environment with horror casino theme",
+    "Time-based challenge system with 40-second survival timer",
+    "Card matching game mechanics with flip animations",
+    "Atmospheric audio and visual effects with dynamic lighting",
+    "Lock mechanism preventing double-click exploits"
+  ],
+  "publicApiSurface": [
+    "initGame() - Initialize game board and shuffle cards",
+    "startTimer() - Begin countdown and background music",
+    "flip(card) - Handle card flip animation and logic",
+    "win() - Victory condition handler",
+    "die() - Game over handler with soul-loss overlay",
+    "a-scene configuration",
+    "a-assets preloading system",
+    "Card state management (flipped/locked)"
+  ]
+}
